@@ -1,0 +1,7 @@
+app_name: "Chat Go API"
+server:
+  port: "8080"
+database:
+  url: "mongodb://localhost:27017/chat_db"
+jwt:
+  secret: "default-secret-key"
