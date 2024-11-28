@@ -2,6 +2,7 @@ package main
 
 import (
 	"chat-go-api/internal/handlers"
+	"chat-go-api/internal/middleware"
 	"chat-go-api/internal/repository"
 	"chat-go-api/internal/services"
 	"chat-go-api/internal/websocket"
@@ -56,10 +57,27 @@ func main() {
 	// 핸들러 초기화
 	authHandler := handlers.NewAuthHandler(authService)
 
+	// ChatService 및 ChatHandler 초기화
+	chatRepo := repository.NewChatRepository(db)
+	messageRepo := repository.NewMessageRepository(db)
+	chatService := services.NewChatService(chatRepo, messageRepo)
+	chatHandler := handlers.NewChatHandler(chatService)
+
+	// WebSocketService 초기화
+	wsService := services.NewWebSocketService(wsManager, messageRepo, chatRepo)
+
+	// AuthMiddleware 초기화
+	authMiddleware := middleware.NewAuthMiddleware("access-secret-key")
+
 	// 라우터 설정
 	router := mux.NewRouter()
 	authHandler.RegisterRoutes(router) // 회원가입 및 인증 관련 라우트 추가
-	router.HandleFunc("/ws", websocket.WebSocketHandler(wsManager))
+	router.HandleFunc("/ws", websocket.WebSocketHandler(wsManager, wsService))
+
+	// 채팅 관련 API에 미들웨어 적용
+	chatRouter := router.PathPrefix("/chat-rooms").Subrouter()
+	chatRouter.Use(authMiddleware.MiddlewareFunc)
+	chatHandler.RegisterRoutes(chatRouter)
 
 	// 서버 시작
 	fmt.Printf("Server starting on port %s\n", config.Server.Port)

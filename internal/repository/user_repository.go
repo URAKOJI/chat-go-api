@@ -60,7 +60,14 @@ func (r *UserRepository) UpdateLoginHistory(id primitive.ObjectID, accessToken s
 
 // 사용자 저장
 func (r *UserRepository) CreateUser(user *models.User) error {
-	_, err := r.db.Collection("users").InsertOne(context.Background(), user)
+	user.CreatedAt = time.Now().Unix()
+	user.UpdatedAt = user.CreatedAt
+	result, err := r.db.Collection("users").InsertOne(context.Background(), user)
+	if err != nil {
+		return err
+	}
+
+	user.ID = result.InsertedID.(primitive.ObjectID)
 	return err
 }
 
@@ -90,7 +97,10 @@ func (r *UserRepository) MarkEmailVerified(userID primitive.ObjectID) error {
 	result, err := r.db.Collection("users").UpdateOne(
 		context.Background(),
 		bson.M{"_id": userID},
-		bson.M{"$set": bson.M{"is_email_verified": true}},
+		bson.M{
+			"$set": bson.M{"is_email_verified": true,
+				"updated_at": time.Now().Unix(),
+			}},
 	)
 	if err != nil {
 		return err
@@ -105,4 +115,13 @@ func (r *UserRepository) MarkEmailVerified(userID primitive.ObjectID) error {
 	}
 
 	return nil
+}
+
+func (r *UserRepository) GetUserByID(userID primitive.ObjectID) (*models.User, error) {
+	var user models.User
+	err := r.db.Collection("users").FindOne(context.Background(), bson.M{"_id": userID}).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
