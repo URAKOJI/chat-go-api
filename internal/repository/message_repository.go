@@ -3,7 +3,6 @@ package repository
 import (
 	"chat-go-api/internal/models"
 	"context"
-	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -69,7 +68,6 @@ func (r *MessageRepository) GetTotalMessagesCount(roomID primitive.ObjectID) (in
 		bson.M{"room_id": roomID}, // 특정 room_id의 메시지 개수 계산
 	)
 	if err != nil {
-		log.Printf("Failed to count messages for roomID %s: %v", roomID.Hex(), err)
 		return 0, err
 	}
 	return total, nil

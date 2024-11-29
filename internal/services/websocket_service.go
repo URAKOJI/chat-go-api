@@ -1,6 +1,7 @@
 package services
 
 import (
+	"chat-go-api/internal/common"
 	"chat-go-api/internal/models"
 	"chat-go-api/internal/repository"
 	"chat-go-api/internal/utils"
@@ -35,7 +36,7 @@ func NewWebSocketService(
 func (s *WebSocketService) GetUserName(userID primitive.ObjectID) (string, error) {
 	user, err := s.messageRepo.GetUserByID(userID)
 	if err != nil {
-		return "", err
+		return common.UNKNOWN_USER_NAME, nil
 	}
 	return user.Name, nil
 }

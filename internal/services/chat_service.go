@@ -1,10 +1,10 @@
 package services
 
 import (
+	"chat-go-api/internal/common"
 	"chat-go-api/internal/models"
 	"chat-go-api/internal/repository"
 	"chat-go-api/internal/utils"
-	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -50,7 +50,7 @@ func (s *ChatService) GetUserChatRooms(userID string) ([]models.ChatRoom, error)
 func (s *ChatService) GetUserName(userID primitive.ObjectID) (string, error) {
 	user, err := s.messageRepo.GetUserByID(userID)
 	if err != nil {
-		return "", err
+		return common.UNKNOWN_USER_NAME, nil
 	}
 	return user.Name, nil
 }
@@ -59,7 +59,6 @@ func (s *ChatService) GetUserName(userID primitive.ObjectID) (string, error) {
 func (s *ChatService) GetTotalMessagesCount(roomID string) (int64, error) {
 	roomObjectID, err := primitive.ObjectIDFromHex(roomID)
 	if err != nil {
-		log.Printf("Invalid roomID format: %s", roomID)
 		return 0, err
 	}
 	return s.messageRepo.GetTotalMessagesCount(roomObjectID)
