@@ -57,8 +57,8 @@ func (s *AuthService) Login(email, password string) (string, string, error) {
 				return "", "", fmt.Errorf("failed to save verification token: %v", err)
 			}
 
-			if err := s.emailService.SendVerificationEmail(email, token); err != nil {
-				return "", "", fmt.Errorf("failed to send verification email: %v", err)
+			if err := s.emailService.SendVerificationEmailAsync(email, token); err != nil {
+				return "", "", err
 			}
 
 			return "", "", errors.New("email not verified. verification email resent")
@@ -71,7 +71,7 @@ func (s *AuthService) Login(email, password string) (string, string, error) {
 	}
 
 	// 토큰 생성
-	accessToken, err := s.generateToken(user.ID.Hex(), s.accessSecret, 5*time.Minute)
+	accessToken, err := s.generateToken(user.ID.Hex(), s.accessSecret, 5*time.Hour)
 	if err != nil {
 		return "", "", err
 	}
@@ -172,10 +172,9 @@ func (s *AuthService) Register(email, password, name string) error {
 	}
 
 	// 이메일 전송
-	if err := s.emailService.SendVerificationEmail(email, token); err != nil {
+	if err := s.emailService.SendVerificationEmailAsync(email, token); err != nil {
 		return err
 	}
-
 	return nil
 }
 

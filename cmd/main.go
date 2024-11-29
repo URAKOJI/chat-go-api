@@ -48,6 +48,8 @@ func main() {
 		os.Getenv("SMTP_PORT"),
 		os.Getenv("SMTP_USERNAME"),
 		os.Getenv("SMTP_PASSWORD"),
+		100,
+		1,
 	)
 
 	// AuthService 초기화
